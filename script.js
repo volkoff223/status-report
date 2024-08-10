@@ -24,6 +24,13 @@ const columnRemoveArray = [
   "Child Status",
 ];
 
+let requiredStaffDocs = [
+  "pre service 3 hour update",
+  "pre service training",
+  "cpr",
+  "abuse prevention/reporting",
+];
+
 // Sort and label files
 fileInput.addEventListener("change", (event) => {
   Array.from(event.target.files).forEach((file) => {
@@ -112,6 +119,21 @@ const cleanStaffData = (dataRows) => {
       dataRows.splice(i, 1);
     }
   }
+  //todo add this to the staff data
+  // Match courseName to array of regex
+  for (let i = 0; i < dataRows.length; i++) {
+    courseName = dataRows[i]["Course Name"]?.toLowerCase();
+    if (requiredStaffDocs.includes(courseName)) {
+      console.log(
+        dataRows[i],
+        i,
+        // dataRows[i]["Staff Name"],
+        courseName,
+        dataRows[i]["Training Completion Date"]
+      );
+    }
+  }
+
   let newArray = [];
   let uniqueObject = {};
   for (let i = dataRows.length - 1; i >= 0; i--) {
@@ -143,6 +165,4 @@ const cleanStudentData = (dataRows) => {
     newArray.push(uniqueObject[i]);
   }
   studentData = newArray;
-
-  console.log(studentData);
 };
