@@ -1,0 +1,126 @@
+body {
+  background-color: #00041e;
+  color: white;
+}
+
+h1 {
+  text-align: center;
+}
+
+input {
+  border: none;
+  background-color: #00041e;
+  color: white;
+}
+
+input[type="file"] {
+  width: 100%;
+}
+
+table {
+  margin: auto;
+}
+
+td {
+  width: auto;
+  border: none;
+}
+
+table,
+th,
+td {
+  border-collapse: collapse;
+  border: 2px solid #797979;
+  padding: 10px;
+}
+
+#file-input[type="file"]::file-selector-button {
+  background-color: #009506;
+  color: white;
+  padding: 3px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#second-file-input[type="file"]::file-selector-button {
+  background-color: #009506;
+  color: white;
+  padding: 3px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+fieldset {
+  margin: 15px auto;
+  border-radius: 5px;
+  border-width: thin;
+  color: gray;
+  border-color: gray;
+  font-size: small;
+}
+
+fieldset:hover {
+  cursor: default;
+}
+
+dialog {
+  background-color: #ffd700;
+}
+
+#card {
+  width: 30%;
+  margin: auto;
+  padding: 20px 0 20px 0;
+}
+
+#first-file-fieldset {
+  display: block;
+}
+
+#second-file-fieldset {
+  display: block;
+}
+
+#open-drawer {
+  color: #6868ea;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: smaller;
+  margin-bottom: 10px;
+}
+
+#scan-btn,
+#close-dialog {
+  background-color: #009506;
+  color: white;
+  padding: 10px 20px;
+  text-decoration: none;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  border-color: black;
+  width: 100%;
+  font-weight: 600;
+}
+
+#reload-page-btn {
+  position: absolute;
+  right: 10px;
+  background-color: #272075;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+@media print {
+  #reload-page-btn {
+    display: none !important;
+  }
+}
+
+::backdrop {
+  background-image: linear-gradient(45deg, #010c53, #02148a);
+  opacity: 0.75;
+}

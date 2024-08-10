@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>Swipe Report</title>
+    <script type="text/javascript" src="papaparse.min.js"></script>
+  </head>
+  <body>
+    <dialog id="dialog">
+      <p>You must fill in all fields.</p>
+      <button id="close-dialog">Ok</button>
+    </dialog>
+    <button id="reload-page-btn">Restart</button>
+    <div id="card">
+      <h1 id="title">Status Report</h1>
+      <div id="form-card">
+        <!-- Name of center input -->
+        <fieldset id="name-of-center-fieldset">
+          <legend for="text-input">Name of center:</legend>
+          <input type="text" name="center-name" id="center-name" />
+        </fieldset>
+
+        <!-- First file input -->
+        <fieldset id="file-fieldset">
+          <legend for="file-input">Select file:</legend>
+          <input
+            type="file"
+            accept=".csv"
+            name="file-input"
+            id="file-input"
+            multiple
+          />
+        </fieldset>
+
+        <button type="submit" id="scan-btn">Generate Report</button>
+      </div>
+    </div>
+
+    <div id="output"></div>
+  </body>
+  <script type="text/javascript" src="script.js"></script>
+</html>
