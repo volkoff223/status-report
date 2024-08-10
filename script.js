@@ -2,6 +2,7 @@ const fileInput = document.getElementById("file-input");
 const fileInputFieldset = document.getElementById("file-fieldset");
 
 let staffData = [];
+let studentData = [];
 
 // Array of columns to remove
 const columnRemoveArray = [
@@ -19,6 +20,8 @@ const columnRemoveArray = [
   "Training Expiration Date",
   "File Attached",
   "Other Special Duties",
+  "Exemption Expiration Date",
+  "Child Status",
 ];
 
 // Sort and label files
@@ -31,8 +34,9 @@ fileInput.addEventListener("change", (event) => {
       case "HRSSA_Staff_Data.csv":
         readFile(file, "Staff Data");
         break;
-      case "HRSSA_Child_licensing_Immunization.csv":
+      case "HRSSA_Child_Licensing_Immunization.csv":
         readFile(file, "Child Imunization Record");
+        break;
       default:
         console.log("Skiped", file.name);
         break;
@@ -58,6 +62,11 @@ const creatDiv = (dataObject, fileName) => {
     cleanStaffData(dataRows);
     dataRows = staffData;
   }
+  if (fileName === "Child Imunization Record") {
+    cleanStudentData(dataRows);
+    dataRows = studentData;
+  }
+
   const div = document.createElement("div");
   const h3 = document.createElement("h3");
   const tbl = document.createElement("table");
@@ -105,7 +114,7 @@ const cleanStaffData = (dataRows) => {
   }
   let newArray = [];
   let uniqueObject = {};
-  for (let i = dataRows.length - 1; i > 0; i--) {
+  for (let i = dataRows.length - 1; i >= 0; i--) {
     staffName = dataRows[i]["Staff Name"];
     uniqueObject[staffName] = dataRows[i];
   }
@@ -113,4 +122,27 @@ const cleanStaffData = (dataRows) => {
     newArray.push(uniqueObject[i]);
   }
   staffData = newArray;
+};
+
+const cleanStudentData = (dataRows) => {
+  for (let i = dataRows.length - 1; i >= 0; i--) {
+    if (
+      dataRows[i]["Child Status"] !== "Active" ||
+      dataRows[i]["Alert"] === ""
+    ) {
+      dataRows.splice(i, 1);
+    }
+  }
+  let newArray = [];
+  let uniqueObject = {};
+  for (let i = dataRows.length - 1; i >= 0; i--) {
+    staffName = dataRows[i]["Child Full Name"];
+    uniqueObject[staffName] = dataRows[i];
+  }
+  for (i in uniqueObject) {
+    newArray.push(uniqueObject[i]);
+  }
+  studentData = newArray;
+
+  console.log(studentData);
 };
