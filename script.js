@@ -45,7 +45,7 @@ fileInput.addEventListener("change", (event) => {
         readFile(file, "Child Imunization Record");
         break;
       default:
-        console.log("Skiped", file.name);
+        //alert("Could not scan " + file.name + ". Check the file name.");
         break;
     }
   });
@@ -63,7 +63,7 @@ const readFile = (file, fileName) => {
 };
 
 const creatDiv = (dataObject, fileName) => {
-  const headers = dataObject.meta.fields;
+  let headers = dataObject.meta.fields;
   let dataRows = dataObject.data;
   if (fileName === "Staff Data") {
     cleanStaffData(dataRows);
@@ -80,6 +80,10 @@ const creatDiv = (dataObject, fileName) => {
   const tblBody = document.createElement("tbody");
   const titleText = document.createTextNode(fileName);
   const headerRow = document.createElement("tr");
+  // Add aditional training documents to staff data headers
+  if (fileName === "Staff Data") {
+    headers = [...headers, "Additional Courses"];
+  }
   headers.forEach((header) => {
     if (!columnRemoveArray.includes(header)) {
       const tblHeader = document.createElement("th");
@@ -93,10 +97,11 @@ const creatDiv = (dataObject, fileName) => {
   dataRows.forEach((dataRow) => {
     const row = document.createElement("tr");
 
+    //todo need to add value of data row to it's corrisponding key column
     for (const [key, value] of Object.entries(dataRow)) {
-      if (!columnRemoveArray.includes(`${key}`)) {
+      if (!columnRemoveArray.includes(key)) {
         const cell = document.createElement("td");
-        const cellText = document.createTextNode(`${value}`);
+        const cellText = document.createTextNode(value);
         cell.appendChild(cellText);
         row.appendChild(cell);
       }
@@ -119,18 +124,17 @@ const cleanStaffData = (dataRows) => {
       dataRows.splice(i, 1);
     }
   }
-  //todo add this to the staff data
   // Match courseName to array of regex
+  let additionalCourses = [];
   for (let i = 0; i < dataRows.length; i++) {
     courseName = dataRows[i]["Course Name"]?.toLowerCase();
     if (requiredStaffDocs.includes(courseName)) {
-      console.log(
-        dataRows[i],
-        i,
-        // dataRows[i]["Staff Name"],
-        courseName,
-        dataRows[i]["Training Completion Date"]
-      );
+      // Create array of objects with staff name and all aditional courses (Will contain duplicates)
+      additionalCourses.push({
+        "Staff Name": dataRows[i]["Staff Name"],
+        "Course Name": courseName,
+        "Training Completion Date": dataRows[i]["Training Completion Date"],
+      });
     }
   }
 
@@ -143,6 +147,22 @@ const cleanStaffData = (dataRows) => {
   for (i in uniqueObject) {
     newArray.push(uniqueObject[i]);
   }
+  // Add additional courses to each unique staff member
+  for (let i = 0; i < newArray.length; i++) {
+    newArray[i]["Additional Courses"] = [];
+    for (let j = 0; j < additionalCourses.length; j++) {
+      if (additionalCourses[j]["Staff Name"] === newArray[i]["Staff Name"]) {
+        const cName = additionalCourses[j]["Course Name"];
+        const cDate = additionalCourses[j]["Training Completion Date"];
+        // This adds key/value pairs of course name and date to each employee
+        //todo This will only work if all additional course names are exatly the same
+        //newArray[i][cName] = cDate;
+        // This add a new array to the employee object for all additional courses they have completed
+        newArray[i]["Additional Courses"].push(cName + " " + cDate);
+      }
+    }
+  }
+  console.log(newArray);
   staffData = newArray;
 };
 
