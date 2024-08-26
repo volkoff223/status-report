@@ -115,7 +115,8 @@ dialog {
 }
 
 @media print {
-  #reload-page-btn {
+  #reload-page-btn,
+  #file-fieldset {
     display: none !important;
   }
 }

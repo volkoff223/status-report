@@ -1,8 +1,14 @@
 const fileInput = document.getElementById("file-input");
 const fileInputFieldset = document.getElementById("file-fieldset");
+const reloadButton = document.getElementById("reload-page-btn");
 
 let staffData = [];
 let studentData = [];
+
+reloadButton.addEventListener("click", () => {
+  window.location.reload();
+  fileInput.value = "";
+});
 
 // Array of columns to remove
 const columnRemoveArray = [
