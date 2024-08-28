@@ -5,10 +5,16 @@ body {
 
 h1 {
   text-align: center;
+  font-size: 40px;
+}
+
+h3 {
+  text-align: center;
+  font-size: 26px;
+  margin-bottom: 3px;
 }
 
 input {
-  border: none;
   background-color: #00041e;
   color: white;
 }
@@ -19,19 +25,19 @@ input[type="file"] {
 
 table {
   margin: auto;
+  margin-bottom: 90px;
+  border-spacing: 0;
+  border: 3px solid #000840;
 }
 
-td {
-  width: auto;
-  border: none;
-}
-
-table,
 th,
 td {
-  border-collapse: collapse;
-  border: 2px solid #797979;
-  padding: 10px;
+  text-align: left;
+  padding: 16px;
+}
+
+tr:nth-child(even) {
+  background-color: #000629;
 }
 
 #file-input[type="file"]::file-selector-button {
@@ -73,36 +79,6 @@ dialog {
   width: 30%;
   margin: auto;
   padding: 20px 0 20px 0;
-}
-
-#first-file-fieldset {
-  display: block;
-}
-
-#second-file-fieldset {
-  display: block;
-}
-
-#open-drawer {
-  color: #6868ea;
-  text-decoration: underline;
-  cursor: pointer;
-  font-size: smaller;
-  margin-bottom: 10px;
-}
-
-#scan-btn,
-#close-dialog {
-  background-color: #009506;
-  color: white;
-  padding: 10px 20px;
-  text-decoration: none;
-  margin: 4px 2px;
-  cursor: pointer;
-  border-radius: 4px;
-  border-color: black;
-  width: 100%;
-  font-weight: 600;
 }
 
 #reload-page-btn {

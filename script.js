@@ -1,6 +1,9 @@
 const fileInput = document.getElementById("file-input");
 const fileInputFieldset = document.getElementById("file-fieldset");
 const reloadButton = document.getElementById("reload-page-btn");
+const formCard = document.getElementById("form-card");
+const centerNameEl = document.getElementById("center-name-el");
+const centerNameInput = document.getElementById("center-name-input");
 
 let staffData = [];
 let studentData = [];
@@ -28,6 +31,9 @@ const columnRemoveArray = [
   "Other Special Duties",
   "Exemption Expiration Date",
   "Child Status",
+
+  //todo Remove this when you want to add it back to the table.
+  "Additional Courses",
 ];
 
 let requiredStaffDocs = [
@@ -39,6 +45,9 @@ let requiredStaffDocs = [
 
 // Sort and label files
 fileInput.addEventListener("change", (event) => {
+  // Remove form card and add center name to title
+  formCard.style.display = "none";
+  centerNameEl.innerText = centerNameInput.value;
   Array.from(event.target.files).forEach((file) => {
     switch (file.name) {
       case "HRSSA_Provider_Data.csv":
