@@ -1,60 +1,6 @@
-// todo All dates are off by a couple of days. Need to find a better way to calculate expiration date
-// todo Date issue is probably due to UTC vs. local time
-
-// todo Check with Jen about the length of time before each thing expires
-
-const fileInput = document.getElementById("file-input");
-const fileInputFieldset = document.getElementById("file-fieldset");
-const reloadButton = document.getElementById("reload-page-btn");
-const formCard = document.getElementById("form-card");
-const centerNameEl = document.getElementById("center-name-el");
-const centerLicenseExpirationEl = document.getElementById(
-  "center-license-exp-el"
-);
-const inspectionEl = document.getElementById("inspection-el");
-const staffDataEl = document.getElementById("staff-data-el");
-const studentDataEl = document.getElementById("student-data-el");
-
-let staffData = [];
-let studentData = [];
-
-reloadButton.addEventListener("click", () => {
-  window.location.reload();
-  fileInput.value = "";
-});
-
-// Array of columns to remove
-const columnRemoveArray = [
-  "User Status",
-  "Provider Name",
-  "Phone",
-  "E-Mail Address",
-  "Staff Title",
-  "Primary Room",
-  "Date of Birth",
-  "Termination Date",
-  "Date Hired",
-  "Course Name",
-  "Training Completion Date",
-  "Training Expiration Date",
-  "File Attached",
-  "Other Special Duties",
-  "Exemption Expiration Date",
-  "Child Status",
-  "Medical Evaluation Expiration",
-  "Date of Inspection",
-  "Additional Courses",
-  "License Expiration Date",
-];
-
-let requiredStaffDocs = [
-  "pre service 3 hour update",
-  "pre service training",
-  "cpr",
-  "abuse prevention/reporting",
-];
-
 // Sort and label files
+const fileInput = document.getElementById("file-input");
+const formCard = document.getElementById("form-card");
 fileInput.addEventListener("change", (event) => {
   // Remove form card and add center name to title
   formCard.style.display = "none";
@@ -83,122 +29,79 @@ const readFile = (file, fileName) => {
     dynamicTyping: false,
     skipEmptyLines: true,
     transform: function (value) {
-      let numberRegex = /^\d+-\d+-\d+/;
-      if (!value) {
-        return "Missing";
-      } else if (numberRegex.test(value)) {
+      // dateRegex matches date formate
+      let dateRegex = /^\d+-\d+-\d+/;
+      if (dateRegex.test(value)) {
         return Date.parse(value);
       } else {
         return value;
       }
     },
 
-    complete: function (results) {
-      creatDiv(results, fileName);
+    complete: function (rawData) {
+      creatTableDiv(rawData, fileName);
     },
   });
 };
 
-const creatDiv = (dataObject, fileName) => {
-  let headers = dataObject.meta.fields;
-  let dataRows = dataObject.data;
-
+const creatTableDiv = (rawData, fileName) => {
+  const inspectionEl = document.getElementById("inspection-el");
+  const staffDataEl = document.getElementById("staff-data-el");
+  const studentDataEl = document.getElementById("student-data-el");
+  let dataRowsObj = {};
   switch (fileName) {
     case "Staff Data":
-      cleanStaffData(dataRows);
-      dataRows = staffData;
+      dataRowsObj = cleanStaffData(rawData);
       break;
     case "Child Imunization Record":
-      cleanStudentData(dataRows);
-      dataRows = studentData;
+      dataRowsObj = cleanStudentData(rawData);
       break;
     case "Inspections":
-      cleanCenterData(dataRows);
+      dataRowsObj = cleanCenterData(rawData);
       break;
   }
-
+  let headersObj = createHeaders(dataRowsObj);
   const div = document.createElement("div");
   const h3 = document.createElement("h3");
   const tbl = document.createElement("table");
   const tblBody = document.createElement("tbody");
   const titleText = document.createTextNode(fileName);
   const headerRow = document.createElement("tr");
-  // Add aditional training documents to staff data headers
-  if (fileName === "Staff Data") {
-    headers = [
-      ...headers,
-      "abuse prevention/reporting",
-      "cpr",
-      "pre service 3 hour update",
-      "pre service training ",
-    ];
+
+  // Append table headers to table
+  for (const [key, value] of Object.entries(headersObj)) {
+    const tblHeader = document.createElement("th");
+    const tblHeaderText = document.createTextNode(value);
+    tblHeader.appendChild(tblHeaderText);
+    headerRow.appendChild(tblHeader);
   }
-  headers.forEach((header) => {
-    if (!columnRemoveArray.includes(header)) {
-      const tblHeader = document.createElement("th");
-      // Remove the word "complete" from the staff data headers
-      if (fileName === "Staff Data") {
-        let reg = header.split(" ");
-        let rev = header.split(" ").reverse();
-        if (
-          rev[0] === "Complete" ||
-          rev[0] === "Comp" ||
-          rev[0] === "Completion"
-        ) {
-          reg.pop();
-        }
-        header = reg.join(" ");
-        const tblHeaderText = document.createTextNode(header);
-        tblHeader.appendChild(tblHeaderText);
-      } else {
-        const tblHeaderText = document.createTextNode(header);
-        tblHeader.appendChild(tblHeaderText);
-      }
-      headerRow.appendChild(tblHeader);
-    }
-  });
   tblBody.appendChild(headerRow);
 
-  dataRows.forEach((dataRow) => {
+  // Append table data to table
+  for (i in dataRowsObj) {
     const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    const cellText = document.createTextNode(i);
+    cell.appendChild(cellText);
+    row.appendChild(cell);
 
-    for (const [key, value] of Object.entries(dataRow)) {
-      if (!columnRemoveArray.includes(key)) {
-        const cell = document.createElement("td");
-        if (!isNaN(value)) {
-          const today = new Date();
-
-          if (value < today) {
-            const cellText = document.createTextNode("Expired");
-            cell.style.color = "red";
-            cell.appendChild(cellText);
-          } else if (value - today < 2419200000) {
-            const cellText = document.createTextNode(
-              new Date(value).toDateString()
-            );
-            cell.style.color = "yellow";
-            cell.appendChild(cellText);
-          } else {
-            const cellText = document.createTextNode(
-              new Date(value).toDateString()
-            );
-            cell.style.color = "rgb(40, 244, 40)";
-            cell.appendChild(cellText);
-          }
-        } else if (value === "Missing") {
-          const cellText = document.createTextNode(value);
-          cell.style.color = "red";
-          cell.appendChild(cellText);
-        } else {
-          const cellText = document.createTextNode(value);
-          cell.appendChild(cellText);
-        }
-        row.appendChild(cell);
+    for (let [key, value] of Object.entries(dataRowsObj[i])) {
+      const cell = document.createElement("td");
+      if (typeof value === "number") {
+        value = new Date(value).toDateString();
+      } else if (value === "") {
+        value = "Missing";
+      } else {
+        value = value;
       }
+      const cellText = document.createTextNode(value);
+      cell.appendChild(cellText);
+      row.appendChild(cell);
     }
 
     tblBody.appendChild(row);
-  });
+  }
+
   tbl.appendChild(tblBody);
   h3.appendChild(titleText);
   div.appendChild(h3);
@@ -216,115 +119,187 @@ const creatDiv = (dataObject, fileName) => {
   }
 };
 
-// Remove inactive and duplicate staff in staff file
-const cleanStaffData = (dataRows) => {
-  for (let i = dataRows.length - 1; i > 0; i--) {
-    if (dataRows[i]["User Status"] === "Inactive") {
-      dataRows.splice(i, 1);
-    }
-  }
-  // Make array of additional courses for each staff member
+const cleanStaffData = (rawData) => {
+  let staffObj = {};
   let additionalCourses = [];
-  for (let i = 0; i < dataRows.length; i++) {
-    courseName = dataRows[i]["Course Name"]?.toLowerCase();
-    if (requiredStaffDocs.includes(courseName)) {
-      // Create array of objects with staff name and all aditional courses (Will contain duplicates)
-      additionalCourses.push({
-        "Staff Name": dataRows[i]["Staff Name"],
-        "Course Name": courseName,
-        "Training Completion Date": dataRows[i]["Training Completion Date"],
-      });
-    }
-  }
-
-  // Remove duplicate staff members
-  let newArray = [];
-  let uniqueObject = {};
-  for (let i = dataRows.length - 1; i >= 0; i--) {
-    staffName = dataRows[i]["Staff Name"];
-    uniqueObject[staffName] = dataRows[i];
-  }
-  for (i in uniqueObject) {
-    newArray.push(uniqueObject[i]);
-  }
-  // Add additional courses as individual properties to each unique staff member
-  for (let i = 0; i < newArray.length; i++) {
-    // Initialize "additional course properties"
-    newArray[i]["abuse prevention/reporting"] = "Missing";
-    newArray[i]["cpr"] = "Missing";
-    newArray[i]["pre service 3 hour update"] = "Missing";
-    newArray[i]["pre service training"] = "Missing";
-    // Set expiration date
-    if (!isNaN(newArray[i]["TB Test Completion"])) {
-      newArray[i]["TB Test Completion"] += 86400000 * 730;
-    }
-    if (!isNaN(newArray[i]["State Background Check Complete"])) {
-      newArray[i]["State Background Check Complete"] += 86400000 * 1095;
-    }
-    if (!isNaN(newArray[i]["FBI Check Complete"])) {
-      newArray[i]["FBI Check Complete"] += 86400000 * 1095;
-    }
-    if (!isNaN(newArray[i]["Child Abuse/Neglect Records Check Comp"])) {
-      newArray[i]["Child Abuse/Neglect Records Check Comp"] += 86400000 * 365;
-    }
-    for (let j = 0; j < additionalCourses.length; j++) {
-      if (additionalCourses[j]["Staff Name"] === newArray[i]["Staff Name"]) {
-        const cName = additionalCourses[j]["Course Name"];
-        if (cName === "abuse prevention/reporting") {
-          const cDate = additionalCourses[j]["Training Completion Date"];
-          newArray[i][cName] = cDate + 86400000 * 730;
+  const requiredStaffDocs = [
+    "pre service 3 hour update",
+    "pre service training",
+    "cpr",
+    "abuse prevention/reporting",
+  ];
+  for (let i = rawData.data.length - 1; i > 0; i--) {
+    let data = rawData.data[i];
+    // Ignore all inactive employees
+    if (data["User Status"] === "Active") {
+      // Create an array of additional couses
+      courseName = data["Course Name"]?.toLowerCase();
+      if (requiredStaffDocs.includes(courseName)) {
+        switch (courseName) {
+          case "pre service 3 hour update":
+            courseName = "preServiceUpdate";
+            break;
+          case "pre service training":
+            courseName = "preServiceTraining";
+            break;
+          case "cpr":
+            courseName = "cpr";
+            break;
+          case "abuse prevention/reporting":
+            courseName = "abusePreventionReporting";
+            break;
+          default:
+            break;
         }
-        if (cName === "cpr") {
-          const cDate = additionalCourses[j]["Training Completion Date"];
-          newArray[i][cName] = cDate + 86400000 * 730;
+        additionalCourses.push({
+          fullName: data["Staff Name"],
+          expirationDate: data["Training Expiration Date"],
+          courseName: courseName,
+        });
+      }
+      let fullName = data["Staff Name"];
+      // Initialize staff object
+      staffObj[fullName] = {
+        abusePreventionReporting: "",
+        cpr: "",
+        preServiceUpdate: "",
+        preServiceTraining: "",
+      };
+      for (key in data) {
+        switch (key) {
+          //! These dates are completion dates and need to have the proper amount of years added to them to make them the correct expiration date
+          case "TB Test Completion":
+            staffObj[fullName].tbTest = data[key];
+          case "State Background Check Complete":
+            staffObj[fullName].stateCheck = data[key];
+          case "FBI Check Complete":
+            staffObj[fullName].fbiCheck = data[key];
+          case "Child Abuse/Neglect Records Check Comp":
+            staffObj[fullName].abuseNeglectCheck = data[key];
         }
-        if (cName === "pre service 3 hour update") {
-          const cDate = additionalCourses[j]["Training Completion Date"];
-          newArray[i][cName] = cDate + 86400000 * 730;
+        //! These datew are already an expiration date. No need to add any time to it
+        if (
+          data["Course Name"].toLowerCase() === "abuse prevention/reporting"
+        ) {
+          staffObj[fullName].abusePreventionReporting =
+            data["Training Expiration Date"];
         }
-        if (cName === "pre service training") {
-          const cDate = additionalCourses[j]["Training Completion Date"];
-          newArray[i][cName] = cDate + 86400000 * 730;
+        if (data["Course Name"].toLowerCase() === "cpr") {
+          staffObj[fullName].cpr = data["Training Expiration Date"];
+        }
+        if (data["Course Name"].toLowerCase() === "pre service 3 hour update") {
+          staffObj[fullName].preServiceUpdate =
+            data["Training Expiration Date"];
+        }
+        if (data["Course Name"].toLowerCase() === "pre service training") {
+          staffObj[fullName].preServiceTraining =
+            data["Training Expiration Date"];
         }
       }
     }
   }
-  staffData = newArray;
+
+  // Add additional courses as properties to employee
+  for (i in staffObj) {
+    for (j in additionalCourses) {
+      if (additionalCourses[j].fullName === i) {
+        let cName = additionalCourses[j].courseName;
+        staffObj[i][cName] = additionalCourses[j].expirationDate;
+      }
+    }
+  }
+  return staffObj;
 };
 
 const cleanStudentData = (dataRows) => {
-  for (let i = dataRows.length - 1; i >= 0; i--) {
+  let data = dataRows.data;
+  let studentObj = {};
+  for (let i = data.length - 1; i >= 0; i--) {
     if (
-      dataRows[i]["Child Status"] !== "Active" ||
-      dataRows[i]["Alert"] !== "Overdue"
+      data[i]["Child Status"] !== "Active" ||
+      data[i]["Alert"] !== "Overdue"
     ) {
-      dataRows.splice(i, 1);
+      data.splice(i, 1);
     }
   }
   let newArray = [];
   let uniqueObject = {};
-  for (let i = dataRows.length - 1; i >= 0; i--) {
-    staffName = dataRows[i]["Child Full Name"];
-    uniqueObject[staffName] = dataRows[i];
+  for (let i = data.length - 1; i >= 0; i--) {
+    staffName = data[i]["Child Full Name"];
+    uniqueObject[staffName] = data[i];
   }
   for (i in uniqueObject) {
     newArray.push(uniqueObject[i]);
   }
-  studentData = newArray;
+  for (let i = 0; i < data.length; i++) {
+    studentObj[data[i]["Child Full Name"]] = { Alert: data[i]["Alert"] };
+  }
+
+  return studentObj;
 };
 
 const cleanCenterData = (dataRows) => {
-  centerNameEl.innerText = dataRows[0]["Provider Name"];
-  centerLicenseExpirationEl.innerHTML =
+  const data = dataRows.data;
+  let centerObj = {};
+  document.getElementById("center-name-el").innerText =
+    data[0]["Provider Name"];
+  document.getElementById("center-license-exp-el").innerHTML =
     "License Expiration Date" +
     "<br />" +
-    new Date(dataRows[0]["License Expiration Date"]).toDateString();
-  for (let i = 0; i < dataRows.length; i++) {
-    dataRows[i]["Date of Inspection"] = new Date(
-      dataRows[i]["Date of Inspection"]
-    ).toDateString();
-    dataRows[i]["Date Inspection Expires"] = new Date(
-      dataRows[i]["Date Inspection Expires"]
-    ).toDateString();
+    new Date(data[0]["License Expiration Date"]).toDateString();
+  for (let i = 0; i < data.length; i++) {
+    centerObj[data[i]["Inspection Type"]] = {
+      "Date Inspection Expires": data[i]["Date Inspection Expires"],
+      "Inspection Result": data[i]["Inspection Result"],
+    };
   }
+  return centerObj;
 };
+
+const createHeaders = (dataRowsObj) => {
+  let headersObj = { fullName: "Name" };
+  for (i in dataRowsObj) {
+    for (const [key, value] of Object.entries(dataRowsObj[i])) {
+      switch (key) {
+        case "fullName":
+          headersObj[key] = "Name";
+          break;
+        case "tbTest":
+          headersObj[key] = "TB Test";
+          break;
+        case "fbiCheck":
+          headersObj[key] = "FBI Background Check";
+          break;
+        case "stateCheck":
+          headersObj[key] = "State Background Check";
+          break;
+        case "cpr":
+          headersObj[key] = "CPR";
+          break;
+        case "abuseNeglectCheck":
+          headersObj[key] = "Child Abuse/Neglect Check";
+          break;
+        case "abusePreventionReporting":
+          headersObj[key] = "Abuse Prevention Reporting";
+          break;
+        case "preServiceTraining":
+          headersObj[key] = "Pre-Service Training";
+          break;
+        case "preServiceUpdate":
+          headersObj[key] = "Pre-Service Update";
+          break;
+
+        default:
+          headersObj[key] = key;
+          break;
+      }
+    }
+  }
+  return headersObj;
+};
+
+// Reload page
+document.getElementById("reload-page-btn").addEventListener("click", () => {
+  window.location.reload();
+  fileInput.value = "";
+});
