@@ -10,17 +10,10 @@
   <body>
     <button id="reload-page-btn">Restart</button>
     <div id="card">
-      <h1 id="center-name-el"></h1>
-      <h1 id="title">Status Report</h1>
+      <h1 id="center-name-el">Status Report</h1>
+      <h4 id="center-license-exp-el"></h4>
 
       <div id="form-card">
-        <label for="center-name">Name of center:</label>
-        <input
-          type="text"
-          name="center-name-input"
-          id="center-name-input"
-          placeholder="Name of center"
-        />
         <fieldset id="file-fieldset">
           <legend for="file-input">Select file:</legend>
 
@@ -44,7 +37,9 @@
         <!-- <button type="submit" id="scan-btn">Generate Report</button> -->
       </div>
     </div>
-
+    <div id="inspection-el"></div>
+    <div id="staff-data-el"></div>
+    <div id="student-data-el"></div>
     <div id="output"></div>
   </body>
   <script type="text/javascript" src="script.js"></script>

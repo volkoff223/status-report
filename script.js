@@ -1,9 +1,19 @@
+// todo All dates are off by a couple of days. Need to find a better way to calculate expiration date
+// todo Date issue is probably due to UTC vs. local time
+
+// todo Check with Jen about the length of time before each thing expires
+
 const fileInput = document.getElementById("file-input");
 const fileInputFieldset = document.getElementById("file-fieldset");
 const reloadButton = document.getElementById("reload-page-btn");
 const formCard = document.getElementById("form-card");
 const centerNameEl = document.getElementById("center-name-el");
-const centerNameInput = document.getElementById("center-name-input");
+const centerLicenseExpirationEl = document.getElementById(
+  "center-license-exp-el"
+);
+const inspectionEl = document.getElementById("inspection-el");
+const staffDataEl = document.getElementById("staff-data-el");
+const studentDataEl = document.getElementById("student-data-el");
 
 let staffData = [];
 let studentData = [];
@@ -31,9 +41,10 @@ const columnRemoveArray = [
   "Other Special Duties",
   "Exemption Expiration Date",
   "Child Status",
-
-  //todo Remove this when you want to add it back to the table.
+  "Medical Evaluation Expiration",
+  "Date of Inspection",
   "Additional Courses",
+  "License Expiration Date",
 ];
 
 let requiredStaffDocs = [
@@ -47,11 +58,10 @@ let requiredStaffDocs = [
 fileInput.addEventListener("change", (event) => {
   // Remove form card and add center name to title
   formCard.style.display = "none";
-  centerNameEl.innerText = centerNameInput.value;
   Array.from(event.target.files).forEach((file) => {
     switch (file.name) {
       case "HRSSA_Provider_Data.csv":
-        readFile(file, "Licensing & Inspections");
+        readFile(file, "Inspections");
         break;
       case "HRSSA_Staff_Data.csv":
         readFile(file, "Staff Data");
@@ -70,7 +80,19 @@ fileInput.addEventListener("change", (event) => {
 const readFile = (file, fileName) => {
   Papa.parse(file, {
     header: true,
-    dynamicTypting: true,
+    dynamicTyping: false,
+    skipEmptyLines: true,
+    transform: function (value) {
+      let numberRegex = /^\d+-\d+-\d+/;
+      if (!value) {
+        return "Missing";
+      } else if (numberRegex.test(value)) {
+        return Date.parse(value);
+      } else {
+        return value;
+      }
+    },
+
     complete: function (results) {
       creatDiv(results, fileName);
     },
@@ -80,13 +102,19 @@ const readFile = (file, fileName) => {
 const creatDiv = (dataObject, fileName) => {
   let headers = dataObject.meta.fields;
   let dataRows = dataObject.data;
-  if (fileName === "Staff Data") {
-    cleanStaffData(dataRows);
-    dataRows = staffData;
-  }
-  if (fileName === "Child Imunization Record") {
-    cleanStudentData(dataRows);
-    dataRows = studentData;
+
+  switch (fileName) {
+    case "Staff Data":
+      cleanStaffData(dataRows);
+      dataRows = staffData;
+      break;
+    case "Child Imunization Record":
+      cleanStudentData(dataRows);
+      dataRows = studentData;
+      break;
+    case "Inspections":
+      cleanCenterData(dataRows);
+      break;
   }
 
   const div = document.createElement("div");
@@ -97,13 +125,35 @@ const creatDiv = (dataObject, fileName) => {
   const headerRow = document.createElement("tr");
   // Add aditional training documents to staff data headers
   if (fileName === "Staff Data") {
-    headers = [...headers, "Additional Courses"];
+    headers = [
+      ...headers,
+      "abuse prevention/reporting",
+      "cpr",
+      "pre service 3 hour update",
+      "pre service training ",
+    ];
   }
   headers.forEach((header) => {
     if (!columnRemoveArray.includes(header)) {
       const tblHeader = document.createElement("th");
-      const tblHeaderText = document.createTextNode(header);
-      tblHeader.appendChild(tblHeaderText);
+      // Remove the word "complete" from the staff data headers
+      if (fileName === "Staff Data") {
+        let reg = header.split(" ");
+        let rev = header.split(" ").reverse();
+        if (
+          rev[0] === "Complete" ||
+          rev[0] === "Comp" ||
+          rev[0] === "Completion"
+        ) {
+          reg.pop();
+        }
+        header = reg.join(" ");
+        const tblHeaderText = document.createTextNode(header);
+        tblHeader.appendChild(tblHeaderText);
+      } else {
+        const tblHeaderText = document.createTextNode(header);
+        tblHeader.appendChild(tblHeaderText);
+      }
       headerRow.appendChild(tblHeader);
     }
   });
@@ -112,12 +162,37 @@ const creatDiv = (dataObject, fileName) => {
   dataRows.forEach((dataRow) => {
     const row = document.createElement("tr");
 
-    //todo need to add value of data row to it's corrisponding key column
     for (const [key, value] of Object.entries(dataRow)) {
       if (!columnRemoveArray.includes(key)) {
         const cell = document.createElement("td");
-        const cellText = document.createTextNode(value);
-        cell.appendChild(cellText);
+        if (!isNaN(value)) {
+          const today = new Date();
+
+          if (value < today) {
+            const cellText = document.createTextNode("Expired");
+            cell.style.color = "red";
+            cell.appendChild(cellText);
+          } else if (value - today < 2419200000) {
+            const cellText = document.createTextNode(
+              new Date(value).toDateString()
+            );
+            cell.style.color = "yellow";
+            cell.appendChild(cellText);
+          } else {
+            const cellText = document.createTextNode(
+              new Date(value).toDateString()
+            );
+            cell.style.color = "rgb(40, 244, 40)";
+            cell.appendChild(cellText);
+          }
+        } else if (value === "Missing") {
+          const cellText = document.createTextNode(value);
+          cell.style.color = "red";
+          cell.appendChild(cellText);
+        } else {
+          const cellText = document.createTextNode(value);
+          cell.appendChild(cellText);
+        }
         row.appendChild(cell);
       }
     }
@@ -128,8 +203,17 @@ const creatDiv = (dataObject, fileName) => {
   h3.appendChild(titleText);
   div.appendChild(h3);
   div.appendChild(tbl);
-  const end = document.getElementById("output");
-  document.body.appendChild(div);
+  switch (fileName) {
+    case "Staff Data":
+      staffDataEl.appendChild(div);
+      break;
+    case "Child Imunization Record":
+      studentDataEl.appendChild(div);
+      break;
+    case "Inspections":
+      inspectionEl.appendChild(div);
+      break;
+  }
 };
 
 // Remove inactive and duplicate staff in staff file
@@ -139,7 +223,7 @@ const cleanStaffData = (dataRows) => {
       dataRows.splice(i, 1);
     }
   }
-  // Match courseName to array of regex
+  // Make array of additional courses for each staff member
   let additionalCourses = [];
   for (let i = 0; i < dataRows.length; i++) {
     courseName = dataRows[i]["Course Name"]?.toLowerCase();
@@ -153,6 +237,7 @@ const cleanStaffData = (dataRows) => {
     }
   }
 
+  // Remove duplicate staff members
   let newArray = [];
   let uniqueObject = {};
   for (let i = dataRows.length - 1; i >= 0; i--) {
@@ -162,22 +247,48 @@ const cleanStaffData = (dataRows) => {
   for (i in uniqueObject) {
     newArray.push(uniqueObject[i]);
   }
-  // Add additional courses to each unique staff member
+  // Add additional courses as individual properties to each unique staff member
   for (let i = 0; i < newArray.length; i++) {
-    newArray[i]["Additional Courses"] = [];
+    // Initialize "additional course properties"
+    newArray[i]["abuse prevention/reporting"] = "Missing";
+    newArray[i]["cpr"] = "Missing";
+    newArray[i]["pre service 3 hour update"] = "Missing";
+    newArray[i]["pre service training"] = "Missing";
+    // Set expiration date
+    if (!isNaN(newArray[i]["TB Test Completion"])) {
+      newArray[i]["TB Test Completion"] += 86400000 * 730;
+    }
+    if (!isNaN(newArray[i]["State Background Check Complete"])) {
+      newArray[i]["State Background Check Complete"] += 86400000 * 1095;
+    }
+    if (!isNaN(newArray[i]["FBI Check Complete"])) {
+      newArray[i]["FBI Check Complete"] += 86400000 * 1095;
+    }
+    if (!isNaN(newArray[i]["Child Abuse/Neglect Records Check Comp"])) {
+      newArray[i]["Child Abuse/Neglect Records Check Comp"] += 86400000 * 365;
+    }
     for (let j = 0; j < additionalCourses.length; j++) {
       if (additionalCourses[j]["Staff Name"] === newArray[i]["Staff Name"]) {
         const cName = additionalCourses[j]["Course Name"];
-        const cDate = additionalCourses[j]["Training Completion Date"];
-        // This adds key/value pairs of course name and date to each employee
-        //todo This will only work if all additional course names are exatly the same
-        //newArray[i][cName] = cDate;
-        // This add a new array to the employee object for all additional courses they have completed
-        newArray[i]["Additional Courses"].push(cName + " " + cDate);
+        if (cName === "abuse prevention/reporting") {
+          const cDate = additionalCourses[j]["Training Completion Date"];
+          newArray[i][cName] = cDate + 86400000 * 730;
+        }
+        if (cName === "cpr") {
+          const cDate = additionalCourses[j]["Training Completion Date"];
+          newArray[i][cName] = cDate + 86400000 * 730;
+        }
+        if (cName === "pre service 3 hour update") {
+          const cDate = additionalCourses[j]["Training Completion Date"];
+          newArray[i][cName] = cDate + 86400000 * 730;
+        }
+        if (cName === "pre service training") {
+          const cDate = additionalCourses[j]["Training Completion Date"];
+          newArray[i][cName] = cDate + 86400000 * 730;
+        }
       }
     }
   }
-  console.log(newArray);
   staffData = newArray;
 };
 
@@ -185,7 +296,7 @@ const cleanStudentData = (dataRows) => {
   for (let i = dataRows.length - 1; i >= 0; i--) {
     if (
       dataRows[i]["Child Status"] !== "Active" ||
-      dataRows[i]["Alert"] === ""
+      dataRows[i]["Alert"] !== "Overdue"
     ) {
       dataRows.splice(i, 1);
     }
@@ -200,4 +311,20 @@ const cleanStudentData = (dataRows) => {
     newArray.push(uniqueObject[i]);
   }
   studentData = newArray;
+};
+
+const cleanCenterData = (dataRows) => {
+  centerNameEl.innerText = dataRows[0]["Provider Name"];
+  centerLicenseExpirationEl.innerHTML =
+    "License Expiration Date" +
+    "<br />" +
+    new Date(dataRows[0]["License Expiration Date"]).toDateString();
+  for (let i = 0; i < dataRows.length; i++) {
+    dataRows[i]["Date of Inspection"] = new Date(
+      dataRows[i]["Date of Inspection"]
+    ).toDateString();
+    dataRows[i]["Date Inspection Expires"] = new Date(
+      dataRows[i]["Date Inspection Expires"]
+    ).toDateString();
+  }
 };

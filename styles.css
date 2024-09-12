@@ -14,6 +14,10 @@ h3 {
   margin-bottom: 3px;
 }
 
+h4 {
+  text-align: center;
+}
+
 input {
   background-color: #00041e;
   color: white;
@@ -49,15 +53,6 @@ tr:nth-child(even) {
   cursor: pointer;
 }
 
-#second-file-input[type="file"]::file-selector-button {
-  background-color: #009506;
-  color: white;
-  padding: 3px 15px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
 fieldset {
   margin: 15px auto;
   border-radius: 5px;
@@ -69,10 +64,6 @@ fieldset {
 
 fieldset:hover {
   cursor: default;
-}
-
-dialog {
-  background-color: #ffd700;
 }
 
 #card {
@@ -95,9 +86,4 @@ dialog {
   #file-fieldset {
     display: none !important;
   }
-}
-
-::backdrop {
-  background-image: linear-gradient(45deg, #010c53, #02148a);
-  opacity: 0.75;
 }
