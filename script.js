@@ -15,8 +15,11 @@ fileInput.addEventListener("change", (event) => {
       case "HRSSA_Child_Licensing_Immunization.csv":
         readFile(file, "Child Imunization Record");
         break;
+      case "HRSSA_Enrollment.csv":
+        readFile(file, "Child Enrollment Information");
+        break;
       default:
-        //alert("Could not scan " + file.name + ". Check the file name.");
+        alert("Could not scan " + file.name + ". Check the file name.");
         break;
     }
   });
@@ -48,6 +51,7 @@ const creatTableDiv = (rawData, fileName) => {
   const inspectionEl = document.getElementById("inspection-el");
   const staffDataEl = document.getElementById("staff-data-el");
   const studentDataEl = document.getElementById("student-data-el");
+  const enrollmentEl = document.getElementById("enrollment-el");
   let dataRowsObj = {};
   switch (fileName) {
     case "Staff Data":
@@ -58,6 +62,9 @@ const creatTableDiv = (rawData, fileName) => {
       break;
     case "Inspections":
       dataRowsObj = cleanCenterData(rawData);
+      break;
+    case "Child Enrollment Information":
+      dataRowsObj = cleanEnrollmentData(rawData);
       break;
   }
   let headersObj = createHeaders(dataRowsObj);
@@ -117,7 +124,7 @@ const creatTableDiv = (rawData, fileName) => {
         cell.style.color = "red";
       } else if (value < today + oneMonth) {
         value = new Date(value).toDateString();
-        cell.style.color = "#9B870C";
+        cell.style.color = "yellow";
       } else if (typeof value === "number") {
         value = new Date(value).toDateString();
       }
@@ -143,6 +150,8 @@ const creatTableDiv = (rawData, fileName) => {
     case "Inspections":
       inspectionEl.appendChild(div);
       break;
+    case "Child Enrollment Information":
+      enrollmentEl.appendChild(div);
   }
 };
 
@@ -276,6 +285,41 @@ const cleanCenterData = (dataRows) => {
   return centerObj;
 };
 
+const cleanEnrollmentData = (dataRows) => {
+  const today = Date.now();
+  const oneMonth = 28 * 24 * 60 * 60 * 1000;
+  let data = dataRows.data;
+  let enrollmentObj = {};
+  for (let i = data.length - 1; i >= 0; i--) {
+    if (data[i]["Child Status"] !== "Active") {
+      data.splice(i, 1);
+    }
+  }
+  let uniqueObject = {};
+  for (let i = data.length - 1; i >= 0; i--) {
+    studentName = data[i]["Child Full Name"];
+    uniqueObject[studentName] = data[i];
+  }
+
+  for (let i = 0; i < data.length; i++) {
+    if (data[i]["Child Notes"] === "") {
+      data[i]["Child Notes"] = "None";
+    }
+    if (
+      data[i]["Child Notes"] !== "None" ||
+      data[i]["Medical Evaluation Expiration"] < today + oneMonth ||
+      data[i]["Medical Evaluation Expiration"] === ""
+    ) {
+      enrollmentObj[data[i]["Child Full Name"]] = {
+        medicalEvaluation: data[i]["Medical Evaluation Expiration"],
+
+        childNotes: data[i]["Child Notes"],
+      };
+    }
+  }
+  return enrollmentObj;
+};
+
 const createHeaders = (dataRowsObj) => {
   let headersObj = { fullName: "Name" };
   for (i in dataRowsObj) {
@@ -307,6 +351,12 @@ const createHeaders = (dataRowsObj) => {
           break;
         case "preServiceUpdate":
           headersObj[key] = "Pre-Service Update";
+          break;
+        case "medicalEvaluation":
+          headersObj[key] = "Medical Evaluation";
+          break;
+        case "childNotes":
+          headersObj[key] = "Child Notes";
           break;
 
         default:

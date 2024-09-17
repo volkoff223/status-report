@@ -90,7 +90,8 @@ fieldset:hover {
   #file-fieldset {
     display: none !important;
   }
-  body {
+  /* Uncomment to print with less colors */
+  /* body {
     background-color: white;
     color: black;
     font-family: Arial, Helvetica, sans-serif;
@@ -100,5 +101,5 @@ fieldset:hover {
   }
   tr:nth-child(even) {
     background-color: #e8e8e8;
-  }
+  } */
 }
