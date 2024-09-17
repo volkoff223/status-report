@@ -79,6 +79,11 @@ const creatTableDiv = (rawData, fileName) => {
 
   // Append table data to table
   for (i in dataRowsObj) {
+    const today = Date.now();
+    const oneMonth = 28 * 24 * 60 * 60 * 1000;
+    const oneYear = 365 * 24 * 60 * 60 * 1000;
+    const twoYears = 730 * 24 * 60 * 60 * 1000;
+    const fiveYears = 1825 * 24 * 60 * 60 * 1000;
     const row = document.createElement("tr");
     const cell = document.createElement("td");
     const cellText = document.createTextNode(i);
@@ -87,12 +92,34 @@ const creatTableDiv = (rawData, fileName) => {
 
     for (let [key, value] of Object.entries(dataRowsObj[i])) {
       const cell = document.createElement("td");
-      if (typeof value === "number") {
-        value = new Date(value).toDateString();
+      //Add the correct amout of years to completion date to produce expiration date
+      if ((key === "cpr" || key === "tbTest") && typeof value === "number") {
+        value = value + twoYears;
+      } else if (
+        (key === "stateCheck" || key === "fbiCheck") &&
+        typeof value === "number"
+      ) {
+        value = value + fiveYears;
+      } else if (
+        (key === "abuseNeglectCheck" || key === "preServiceUpdate") &&
+        typeof value === "number"
+      ) {
+        value = value + oneYear;
       } else if (value === "") {
         value = "Missing";
       } else {
         value = value;
+      }
+      if (value < today) {
+        value = "Expired";
+        cell.style.color = "red";
+      } else if (value === "Missing") {
+        cell.style.color = "red";
+      } else if (value < today + oneMonth) {
+        value = new Date(value).toDateString();
+        cell.style.color = "#9B870C";
+      } else if (typeof value === "number") {
+        value = new Date(value).toDateString();
       }
       const cellText = document.createTextNode(value);
       cell.appendChild(cellText);
@@ -153,7 +180,7 @@ const cleanStaffData = (rawData) => {
         }
         additionalCourses.push({
           fullName: data["Staff Name"],
-          expirationDate: data["Training Expiration Date"],
+          completionDate: data["Training Completion Date"],
           courseName: courseName,
         });
       }
@@ -170,30 +197,15 @@ const cleanStaffData = (rawData) => {
           //! These dates are completion dates and need to have the proper amount of years added to them to make them the correct expiration date
           case "TB Test Completion":
             staffObj[fullName].tbTest = data[key];
+            break;
           case "State Background Check Complete":
             staffObj[fullName].stateCheck = data[key];
+            break;
           case "FBI Check Complete":
             staffObj[fullName].fbiCheck = data[key];
+            break;
           case "Child Abuse/Neglect Records Check Comp":
             staffObj[fullName].abuseNeglectCheck = data[key];
-        }
-        //! These datew are already an expiration date. No need to add any time to it
-        if (
-          data["Course Name"].toLowerCase() === "abuse prevention/reporting"
-        ) {
-          staffObj[fullName].abusePreventionReporting =
-            data["Training Expiration Date"];
-        }
-        if (data["Course Name"].toLowerCase() === "cpr") {
-          staffObj[fullName].cpr = data["Training Expiration Date"];
-        }
-        if (data["Course Name"].toLowerCase() === "pre service 3 hour update") {
-          staffObj[fullName].preServiceUpdate =
-            data["Training Expiration Date"];
-        }
-        if (data["Course Name"].toLowerCase() === "pre service training") {
-          staffObj[fullName].preServiceTraining =
-            data["Training Expiration Date"];
         }
       }
     }
@@ -204,7 +216,15 @@ const cleanStaffData = (rawData) => {
     for (j in additionalCourses) {
       if (additionalCourses[j].fullName === i) {
         let cName = additionalCourses[j].courseName;
-        staffObj[i][cName] = additionalCourses[j].expirationDate;
+        if (
+          (cName === "preServiceTraining" ||
+            cName === "abusePreventionReporting") &&
+          additionalCourses[j].completionDate !== ""
+        ) {
+          staffObj[i][cName] = "Completed";
+        } else {
+          staffObj[i][cName] = additionalCourses[j].completionDate;
+        }
       }
     }
   }
@@ -277,7 +297,7 @@ const createHeaders = (dataRowsObj) => {
           headersObj[key] = "CPR";
           break;
         case "abuseNeglectCheck":
-          headersObj[key] = "Child Abuse/Neglect Check";
+          headersObj[key] = "Sworn Statement";
           break;
         case "abusePreventionReporting":
           headersObj[key] = "Abuse Prevention Reporting";
