@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="styles.css" />
     <title>Status Report</title>
     <script type="text/javascript" src="papaparse.min.js"></script>
     <link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <button id="reload-page-btn">Restart</button>
@@ -28,11 +28,12 @@
           <h4>Hold "Ctrl" to select multiple files</h4>
           <sub>
             This version can only generate a report for provider data, staff
-            data, student immunization records, and enrollment information.
+            data, student immunization records, enrollment information, and
+            ledger transactions.
             <br />
             The files must maintain the original names; HRSSA_Provider_Data.csv,
-            HRSSA_Staff_Data.csv, HRSSA_Child_Licensing_Immunization.csv, and
-            HRSSA_Enrollment.csv.
+            HRSSA_Staff_Data.csv, HRSSA_Child_Licensing_Immunization.csv,
+            HRSSA_Enrollment.csv, and HRSSA_Ledger_Transactions.csv.
           </sub>
         </fieldset>
 
@@ -43,7 +44,8 @@
     <div id="staff-data-el"></div>
     <div id="student-data-el"></div>
     <div id="enrollment-el"></div>
+    <div id="transactions-el"></div>
     <div id="output"></div>
+    <script type="text/javascript" src="script.js"></script>
   </body>
-  <script type="text/javascript" src="script.js"></script>
 </html>

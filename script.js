@@ -18,6 +18,9 @@ fileInput.addEventListener("change", (event) => {
       case "HRSSA_Enrollment.csv":
         readFile(file, "Child Enrollment Information");
         break;
+      case "HRSSA_Ledger_Transactions.csv":
+        readFile(file, "Ledger Transactions");
+        break;
       default:
         alert("Could not scan " + file.name + ". Check the file name.");
         break;
@@ -52,6 +55,7 @@ const creatTableDiv = (rawData, fileName) => {
   const staffDataEl = document.getElementById("staff-data-el");
   const studentDataEl = document.getElementById("student-data-el");
   const enrollmentEl = document.getElementById("enrollment-el");
+  const transactionsEl = document.getElementById("transactions-el");
   let dataRowsObj = {};
   switch (fileName) {
     case "Staff Data":
@@ -66,6 +70,9 @@ const creatTableDiv = (rawData, fileName) => {
     case "Child Enrollment Information":
       dataRowsObj = cleanEnrollmentData(rawData);
       break;
+    case "Ledger Transactions":
+      dataRowsObj = cleanTransactionsData(rawData);
+      break;
   }
   let headersObj = createHeaders(dataRowsObj);
   const div = document.createElement("div");
@@ -74,7 +81,6 @@ const creatTableDiv = (rawData, fileName) => {
   const tblBody = document.createElement("tbody");
   const titleText = document.createTextNode(fileName);
   const headerRow = document.createElement("tr");
-
   // Append table headers to table
   for (const [key, value] of Object.entries(headersObj)) {
     const tblHeader = document.createElement("th");
@@ -117,7 +123,10 @@ const creatTableDiv = (rawData, fileName) => {
       } else {
         value = value;
       }
-      if (value < today) {
+      // This if statement checks if value is dollar amount or date
+      if (value < 10000) {
+        value = value;
+      } else if (value < today) {
         value = "Expired";
         cell.style.color = "red";
       } else if (value === "Missing") {
@@ -152,6 +161,10 @@ const creatTableDiv = (rawData, fileName) => {
       break;
     case "Child Enrollment Information":
       enrollmentEl.appendChild(div);
+      break;
+    case "Ledger Transactions":
+      transactionsEl.appendChild(div);
+      break;
   }
 };
 
@@ -318,6 +331,20 @@ const cleanEnrollmentData = (dataRows) => {
     }
   }
   return enrollmentObj;
+};
+
+const cleanTransactionsData = (dataRows) => {
+  let data = dataRows.data;
+  let transactionsObject = {};
+  for (let i = 0; i < data.length; i++) {
+    if (data[i]["Current Balance"] > 0) {
+      parentName = data[i]["Bill to Name"];
+      transactionsObject[parentName] = { "Current Balance": "" };
+      transactionsObject[parentName]["Current Balance"] =
+        data[i]["Current Balance"];
+    }
+  }
+  return transactionsObject;
 };
 
 const createHeaders = (dataRowsObj) => {
