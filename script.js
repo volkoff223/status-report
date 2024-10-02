@@ -362,7 +362,7 @@ const createHeaders = (dataRowsObj) => {
           headersObj[key] = "FBI Background Check";
           break;
         case "stateCheck":
-          headersObj[key] = "State Background Check";
+          headersObj[key] = "Central Background Check";
           break;
         case "cpr":
           headersObj[key] = "CPR";
