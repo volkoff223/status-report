@@ -1,4 +1,4 @@
-const rawData = {
+const employeeRawData = {
   data: [
     {
       "User Status": "Active",
@@ -4914,26 +4914,20 @@ const rawData = {
   },
 };
 
-class Person {
-  constructor(fName, lName) {
+class Employee {
+  constructor(fName, lName, documents) {
     this.fName = fName;
     this.lName = lName;
-  }
-}
-
-class Employee extends Person {
-  constructor(fName, lName, documents) {
-    super(fName, lName);
     this.documents = documents;
   }
 }
 
-const createEmployees = () => {
+const createEmployees = (employeeRawData) => {
   let employees = {};
-  rawData.data.forEach((element) => {
+  employeeRawData.data.forEach((element) => {
     if (element["User Status"] === "Active") {
       let documents = {};
-      const fName = element["Staff Name"].split(",")[1];
+      const fName = element["Staff Name"].split(", ")[1];
       const lName = element["Staff Name"].split(",")[0];
       const fullName = element["Staff Name"];
       documents.tbTest = element["TB Test Completion"];
@@ -4944,7 +4938,7 @@ const createEmployees = () => {
       employees[fullName] = new Employee(fName, lName, documents);
     }
   });
-  rawData.data.forEach((element) => {
+  employeeRawData.data.forEach((element) => {
     const fullName = element["Staff Name"];
     if (
       element["User Status"] === "Active" &&
@@ -4955,8 +4949,7 @@ const createEmployees = () => {
       element["User Status"] === "Active" &&
       element["Course Name"].toLowerCase() === "pre service training"
     ) {
-      employees[fullName].documents.preService =
-        element["Training Completion Date"];
+      employees[fullName].documents.preService = "Completed";
     } else if (
       element["User Status"] === "Active" &&
       element["Course Name"].toLowerCase() === "pre service 3 hour update"
@@ -4967,11 +4960,10 @@ const createEmployees = () => {
       element["User Status"] === "Active" &&
       element["Course Name"].toLowerCase() === "abuse prevention/reporting"
     ) {
-      employees[fullName].documents.abusePrevention =
-        element["Training Completion Date"];
+      employees[fullName].documents.abusePrevention = "Completed";
     }
   });
-  console.log(employees);
+  return employees;
 };
 
-createEmployees();
+console.log(createEmployees(employeeRawData));

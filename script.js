@@ -21,6 +21,9 @@ fileInput.addEventListener("change", (event) => {
       case "HRSSA_Ledger_Transactions.csv":
         readFile(file, "Ledger Transactions");
         break;
+      case "table-data.txt":
+        readFile(file, "Swipe Report");
+        break;
       default:
         alert("Could not scan " + file.name + ". Check the file name.");
         break;
@@ -30,8 +33,10 @@ fileInput.addEventListener("change", (event) => {
 
 // Parse file and return array of objects
 const readFile = (file, fileName) => {
+  let isHeader = true;
+  fileName === "Swipe Report" ? (isHeader = false) : (isHeader = true);
   Papa.parse(file, {
-    header: true,
+    header: isHeader,
     dynamicTyping: false,
     skipEmptyLines: true,
     transform: function (value) {
@@ -51,6 +56,7 @@ const readFile = (file, fileName) => {
 };
 
 const creatTableDiv = (rawData, fileName) => {
+  const swipeReportEl = document.getElementById("swipe-report-el");
   const inspectionEl = document.getElementById("inspection-el");
   const staffDataEl = document.getElementById("staff-data-el");
   const studentDataEl = document.getElementById("student-data-el");
@@ -73,6 +79,8 @@ const creatTableDiv = (rawData, fileName) => {
     case "Ledger Transactions":
       dataRowsObj = cleanTransactionsData(rawData);
       break;
+    case "Swipe Report":
+      dataRowsObj = cleanSwipeReport(rawData);
   }
   let headersObj = createHeaders(dataRowsObj);
   const div = document.createElement("div");
@@ -164,6 +172,9 @@ const creatTableDiv = (rawData, fileName) => {
       break;
     case "Ledger Transactions":
       transactionsEl.appendChild(div);
+      break;
+    case "Swipe Report":
+      swipeReportEl.appendChild(div);
       break;
   }
 };
@@ -345,6 +356,19 @@ const cleanTransactionsData = (dataRows) => {
     }
   }
   return transactionsObject;
+};
+
+const cleanSwipeReport = (dataRows) => {
+  let data = dataRows.data;
+  let swipeObject = {};
+  data.forEach((child) => {
+    if (child.includes("I")) {
+      swipeObject[child[0]] = {
+        "Date Of Missed Swipe": child.indexOf("I") - 5,
+      };
+    }
+  });
+  return swipeObject;
 };
 
 const createHeaders = (dataRowsObj) => {
