@@ -364,7 +364,7 @@ const cleanSwipeReport = (dataRows) => {
   data.forEach((child) => {
     if (child.includes("I")) {
       swipeObject[child[0]] = {
-        "Date Of Missed Swipe": child.indexOf("I") - 5,
+        "Date Of Missed Swipe": child.indexOf("I") - 3,
       };
     }
   });
