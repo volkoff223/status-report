@@ -266,7 +266,6 @@ const cleanStaffData = (rawData) => {
       }
     }
   }
-  console.log(staffObj);
   return staffObj;
 };
 
