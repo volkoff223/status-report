@@ -114,7 +114,12 @@ const creatTableDiv = (rawData, fileName) => {
     for (let [key, value] of Object.entries(dataRowsObj[i])) {
       const cell = document.createElement("td");
       //Add the correct amout of years to completion date to produce expiration date
-      if ((key === "cpr" || key === "tbTest") && typeof value === "number") {
+      if (
+        (key === "cpr" ||
+          key === "tbTest" ||
+          key === "abusePreventionReporting") &&
+        typeof value === "number"
+      ) {
         value = value + twoYears;
       } else if (
         (key === "stateCheck" || key === "fbiCheck") &&
@@ -250,8 +255,7 @@ const cleanStaffData = (rawData) => {
       if (additionalCourses[j].fullName === i) {
         let cName = additionalCourses[j].courseName;
         if (
-          (cName === "preServiceTraining" ||
-            cName === "abusePreventionReporting") &&
+          cName === "preServiceTraining" &&
           // This line checks if date === 2000-1-1. That date is a place holder for "No document on file"
           additionalCourses[j].completionDate !== 946684800000
         ) {
@@ -262,6 +266,7 @@ const cleanStaffData = (rawData) => {
       }
     }
   }
+  console.log(staffObj);
   return staffObj;
 };
 
