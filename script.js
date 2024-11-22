@@ -252,7 +252,8 @@ const cleanStaffData = (rawData) => {
         if (
           (cName === "preServiceTraining" ||
             cName === "abusePreventionReporting") &&
-          additionalCourses[j].completionDate !== ""
+          // This line checks if date === 2000-1-1. That date is a place holder for "No document on file"
+          additionalCourses[j].completionDate !== 946684800000
         ) {
           staffObj[i][cName] = "Completed";
         } else {
