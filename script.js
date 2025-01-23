@@ -122,14 +122,13 @@ const creatTableDiv = (rawData, fileName) => {
       ) {
         value = value + twoYears;
       } else if (
-        (key === "stateCheck" || key === "fbiCheck") &&
+        (key === "stateCheck" ||
+          key === "fbiCheck" ||
+          key === "abuseNeglectCheck") &&
         typeof value === "number"
       ) {
         value = value + fiveYears;
-      } else if (
-        (key === "abuseNeglectCheck" || key === "preServiceUpdate") &&
-        typeof value === "number"
-      ) {
+      } else if (key === "preServiceUpdate" && typeof value === "number") {
         value = value + oneYear;
       } else if (value === "") {
         value = "Missing";
